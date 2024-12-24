@@ -6,16 +6,16 @@ const Image = require('./model');
 const dotenv = require('dotenv');
 const cors = require('cors');
 
-app.use(cors({
-    origin: 'http://localhost:3000', // Địa chỉ frontend React của bạn
-    methods: 'GET, POST', // Phương thức HTTP được phép
-    allowedHeaders: 'Content-Type', // Các header được phép
-  }));
-
 dotenv.config();
 
 const app = express();
 connectDb();
+
+app.use(cors({
+    origin: 'http://localhost:3000',
+    methods: 'GET, POST', 
+    allowedHeaders: 'Content-Type',
+  }));
 
 const storage = multer.memoryStorage(); 
 const upload = multer({ storage });
