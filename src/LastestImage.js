@@ -1,38 +1,38 @@
-// LatestImage.js
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
 
 const LastestImage = () => {
   const [imageUrl, setImageUrl] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    // Gọi API để lấy ảnh mới nhất
-    axios.get('http://localhost:5000/upload')
+  const fetchLatestImage = () => {
+    setLoading(true);
+
+    axios.get('http://localhost:5000/latest-image')
       .then(response => {
         setImageUrl(response.data.imageUrl);
         setLoading(false);
       })
       .catch(err => {
-        setError('Failed to fetch image');
         setLoading(false);
       });
-  }, []);
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (error) {
-    return <div>{error}</div>;
-  }
+  };
 
   return (
     <div>
-      <img src={imageUrl} alt="Latest Uploaded" style={{ maxWidth: '100%', height: 'auto' }} />
+      <button onClick={fetchLatestImage} disabled={loading}>
+        {loading ? 'Loading...' : 'Fetch Latest Image'}
+      </button>
+
+      {error && <p>{error}</p>}
+
+      {imageUrl && (
+        <div>
+          <img src={imageUrl} alt="Latest Uploaded" style={{ maxWidth: '100%', height: 'auto' }} />
+        </div>
+      )}
     </div>
   );
-}
+};
 
 export default LastestImage;
