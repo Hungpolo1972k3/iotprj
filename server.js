@@ -4,6 +4,13 @@ const cloudinary = require('cloudinary').v2;
 const connectDb = require('./connectDb');
 const Image = require('./model');
 const dotenv = require('dotenv');
+const cors = require('cors');
+
+app.use(cors({
+    origin: 'http://localhost:3000', // Địa chỉ frontend React của bạn
+    methods: 'GET, POST', // Phương thức HTTP được phép
+    allowedHeaders: 'Content-Type', // Các header được phép
+  }));
 
 dotenv.config();
 
@@ -41,20 +48,37 @@ app.post('/upload', upload.single('image'), async (req, res) => {
       }
     );
     result.end(req.file.buffer);
-    const latestImage = await Image.findOne().sort({ createdAt: -1 }).exec();
-
-    if (!latestImage) {
-      return res.status(404).send('No images found');
-    }
-    res.status(200).json({
-        imageUrl: latestImage.imageUrl,
-        cloudinaryId: latestImage.cloudinaryId,
-        createdAt: latestImage.createdAt,
-      });
+    res.status(200).send("Post and save successfully!");
   } catch (error) {
     res.status(500).send('Error during file upload');
   }
 });
+
+app.get('/latest-image', async (req, res) => {
+    try {
+      // Lấy danh sách tất cả các tệp đã tải lên từ Cloudinary
+      const result = await cloudinary.api.resources({
+        type: 'upload', // Chỉ lấy các tài nguyên tải lên
+        max_results: 1, // Lấy 1 tệp
+        order: 'desc', // Sắp xếp theo thứ tự giảm dần theo thời gian tải lên
+      });
+  
+      if (!result.resources || result.resources.length === 0) {
+        return res.status(404).send('No images found');
+      }
+  
+      const latestImage = result.resources[0];
+  
+      res.status(200).json({
+        imageUrl: latestImage.secure_url,
+        publicId: latestImage.public_id,
+        createdAt: latestImage.created_at,
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(500).send('Error fetching latest image');
+    }
+  });
 
 app.listen(5000, () => {
   console.log('Server is running on http://localhost:5000');
